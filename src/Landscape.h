@@ -17,59 +17,56 @@
 
 #include "Patch.h"
 
-// ---------------------------------------------------------------------
 // Various Pre-Defined map sizes & their #define counterparts:
 
 #define MAP_1024
 
 #ifdef MAP_2048
-
 // ------- 2048x2048 MAP -------
 #define MAP_SIZE (2048)
 #define NUM_PATCHES_PER_SIDE (32)
-
 #else
 #ifdef MAP_1024
-
 // ------- 1024x1024 MAP -------
 #define MAP_SIZE (1024)
 #define NUM_PATCHES_PER_SIDE (16)
-
 #else
-
 // ------- 512x512 MAP -------
 #define MAP_SIZE (512)
 #define NUM_PATCHES_PER_SIDE (8)
-
 #endif
 #endif
 
-// ---------------------------------------------------------------------
 // Scale of the terrain ie: 1 unit of the height map == how many world units (meters)?
 // 1.0f == 1 meter resolution
 // 0.5f == 1/2 meter resolution
 // 0.25f == 1/4 meter resolution
 // etc..
-#define MULT_SCALE (0.5f)
+#define MULT_SCALE 0.5f
 
 // How many TriTreeNodes should be allocated?
-#define POOL_SIZE (25000)
+#define POOL_SIZE 25000
 
 // Some more definitions
-#define PATCH_SIZE (MAP_SIZE/NUM_PATCHES_PER_SIDE)
-#define TEXTURE_SIZE (128)
+#define PATCH_SIZE (MAP_SIZE / NUM_PATCHES_PER_SIDE)
+#define TEXTURE_SIZE 128
 
 // Drawing Modes
-#define DRAW_USE_TEXTURE   (0)
-#define DRAW_USE_LIGHTING  (1)
-#define DRAW_USE_FILL_ONLY (2)
-#define DRAW_USE_WIREFRAME (3)
+enum DRAWING_MODES
+{
+    DRAW_USE_TEXTURE = 0,
+    DRAW_USE_LIGHTING,
+    DRAW_USE_FILL_ONLY,
+    DRAW_USE_WIREFRAME
+};
 
 // Rotation Indexes
-#define ROTATE_PITCH (0)
-#define ROTATE_YAW   (1)
-#define ROTATE_ROLL	 (2)
-
+enum ROTATION_INDEXES
+{
+    ROTATE_PITCH = 0,
+    ROTATE_YAW,
+    ROTATE_ROLL
+};
 
 #define SQR(x) ((x) * (x))
 #define MAX(a,b) ((a < b) ? (b) : (a))
@@ -89,10 +86,8 @@ extern float gFovX;
 extern void calcNormal(float v[3][3], float out[3]);
 extern void ReduceToUnit(float vector[3]);
 
-//
 // Landscape Class
 // Holds all the information to render an entire landscape.
-//
 class Landscape
 {
 protected:
@@ -119,8 +114,6 @@ public:
 	virtual void Reset();
 	virtual void Tessellate();
 	virtual void Render();
-
 };
-
 
 #endif

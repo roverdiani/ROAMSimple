@@ -13,15 +13,13 @@
 //  And many more...
 
 #include <windows.h>
-#include <math.h>
+#include <cmath>
 #include <gl/gl.h>		// OpenGL
 #include <SDL.h>
 
 #include "landscape.h"
 
-// ---------------------------------------------------------------------
 // Definition of the static member variables
-//
 int Landscape::m_NextTriNode;
 TriTreeNode Landscape::m_TriPool[POOL_SIZE];
 
@@ -32,10 +30,10 @@ TriTreeNode* Landscape::AllocateTri()
 
 	// IF we've run out of TriTreeNodes, just return NULL (this is handled gracefully)
 	if (m_NextTriNode >= POOL_SIZE)
-		return NULL;
+		return nullptr;
 
 	pTri = &(m_TriPool[m_NextTriNode++]);
-	pTri->LeftChild = pTri->RightChild = NULL;
+	pTri->LeftChild = pTri->RightChild = nullptr;
 
 	return pTri;
 }
@@ -96,7 +94,7 @@ void Landscape::Reset()
 			patch->SetVisibility(eyeX, eyeY, leftX, leftY, rightX, rightY);
 			
 			// Check to see if this patch has been deformed since last frame.
-			// If so, recompute the varience tree for it.
+			// If so, recompute the variance tree for it.
 			if (patch->isDirty())
 				patch->ComputeVariance();
 
@@ -106,22 +104,22 @@ void Landscape::Reset()
 				if (x > 0)
 					patch->GetBaseLeft()->LeftNeighbor = m_Patches[y][x - 1].GetBaseRight();
 				else
-					patch->GetBaseLeft()->LeftNeighbor = NULL; // Link to bordering Landscape here..
+					patch->GetBaseLeft()->LeftNeighbor = nullptr; // Link to bordering Landscape here..
 
 				if (x < (NUM_PATCHES_PER_SIDE - 1))
 					patch->GetBaseRight()->LeftNeighbor = m_Patches[y][x + 1].GetBaseLeft();
 				else
-					patch->GetBaseRight()->LeftNeighbor = NULL;	// Link to bordering Landscape here..
+					patch->GetBaseRight()->LeftNeighbor = nullptr;	// Link to bordering Landscape here..
 
 				if (y > 0)
 					patch->GetBaseLeft()->RightNeighbor = m_Patches[y - 1][x].GetBaseRight();
 				else
-					patch->GetBaseLeft()->RightNeighbor = NULL;	// Link to bordering Landscape here..
+					patch->GetBaseLeft()->RightNeighbor = nullptr;	// Link to bordering Landscape here..
 
 				if (y < (NUM_PATCHES_PER_SIDE - 1))
 					patch->GetBaseRight()->RightNeighbor = m_Patches[y + 1][x].GetBaseLeft();
 				else
-					patch->GetBaseRight()->RightNeighbor = NULL; // Link to bordering Landscape here..
+					patch->GetBaseRight()->RightNeighbor = nullptr; // Link to bordering Landscape here..
 			}
 		}
 	}

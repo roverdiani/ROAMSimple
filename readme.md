@@ -21,6 +21,53 @@ The original code was written using GLUT, for Win9X platforms, in the early 2000
 
 My port basically replace GLUT with SDL2 to manage the window, events and so on, but retains most of the ROAM code as close as the original as possible. There are some codestyle changes, and a little refactor, but nothing major.
 
+## Built With
+
+SDL2, OpenGL, CMake, C++, CLion
+
+## Getting Started
+
+The project was made on Windows, with Jetbrains' CLion IDE using the Microsoft Visual Studio 2022 toolchain.
+
+### Prerequisites
+
+The SDL2 library is required.
+
+* SDL2
+   * Windows: download the binaries and place them wherever you want. Create a environment variable named **SDL2DIR** that points to the root directory of the SDL2 binaries.
+
+### Installation
+
+1. Clone the repo
+
+```sh
+git clone https://github.com/roverdiani/ROAMSimple.git
+```
+
+2. Open and build the project using CLion, or use CMake directly to build it.
+
+3. Copy the SDL2.dll to the directory where the executable is located.
+
+4. Copy the heightmap file to the directory where the executable is located. The original sample heightmap is available on the demo folder of the repository. It should be capable to open *Tread Marks* maps aswell, just like the original version, but that was not tested.
+
+4. Run the application.
+
+## Usage
+
+The application is pretty simple, and there is just a few controls that you can use to explore the terrain:
+
+* Mouse motion: by clicking the *left mouse button* and moving the mouse, you can control the camera.
+
+* Keyboard: there are a few key commands that you can use:
+   * W, A, S, D, UP, DOWN: movement.
+   * F: toggle animation.
+   * O: toggle observe mode.
+   * Q: toggle surf mode.
+   * R: toggle frustum culling.
+   * 1, 2: reduce and increase FOV.
+   * 0, 9: increase, reduce map detail.
+   * ESCAPE: quit application.
+
 ## Authors
 
 * **Bryan Turner** - *Developer* - [Bryan Turner](https://www.gamedeveloper.com/programming/real-time-dynamic-level-of-detail-terrain-rendering-with-roam) - *Original Project*

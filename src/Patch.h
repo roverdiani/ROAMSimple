@@ -25,11 +25,11 @@ class Landscape;
 // Store the triangle tree data, but no coordinates!
 struct TriTreeNode
 {
-	TriTreeNode* LeftChild;
-	TriTreeNode* RightChild;
-	TriTreeNode* BaseNeighbor;
-	TriTreeNode* LeftNeighbor;
-	TriTreeNode* RightNeighbor;
+    TriTreeNode *LeftChild;
+    TriTreeNode *RightChild;
+    TriTreeNode *BaseNeighbor;
+    TriTreeNode *LeftNeighbor;
+    TriTreeNode *RightNeighbor;
 };
 
 // Patch Class
@@ -37,56 +37,63 @@ struct TriTreeNode
 class Patch
 {
 protected:
-	unsigned char* m_HeightMap;									// Pointer to height map to use
-	int m_WorldX, m_WorldY;										// World coordinate offset of this patch.
+    unsigned char *m_HeightMap;                                    // Pointer to height map to use
+    int m_WorldX, m_WorldY;                                        // World coordinate offset of this patch.
 
-	unsigned char m_VarianceLeft[1 << (VARIANCE_DEPTH)];		// Left variance tree
-	unsigned char m_VarianceRight[1 << (VARIANCE_DEPTH)];		// Right variance tree
+    unsigned char m_VarianceLeft[1 << (VARIANCE_DEPTH)];        // Left variance tree
+    unsigned char m_VarianceRight[1 << (VARIANCE_DEPTH)];        // Right variance tree
 
-	unsigned char* m_CurrentVariance;							// Which varience we are currently using. [Only valid during the Tessellate and ComputeVariance passes]
-	bool m_VarianceDirty;										// Does the Varience Tree need to be recalculated for this Patch?
-	bool m_isVisible;											// Is this patch visible in the current frame?
+    unsigned char *m_CurrentVariance;                            // Which varience we are currently using. [Only valid during the Tessellate and ComputeVariance passes]
+    bool m_VarianceDirty;                                        // Does the Varience Tree need to be recalculated for this Patch?
+    bool m_isVisible;                                            // Is this patch visible in the current frame?
 
-	TriTreeNode m_BaseLeft;										// Left base triangle tree node
-	TriTreeNode m_BaseRight;									// Right base triangle tree node
+    TriTreeNode m_BaseLeft;                                        // Left base triangle tree node
+    TriTreeNode m_BaseRight;                                    // Right base triangle tree node
 
 public:
-	// Some encapsulation functions & extras
-	TriTreeNode* GetBaseLeft()
-	{
-		return &m_BaseLeft;
-	}
-	
-	TriTreeNode* GetBaseRight()
-	{
-		return &m_BaseRight;
-	}
+    // Some encapsulation functions & extras
+    TriTreeNode *GetBaseLeft()
+    {
+        return &m_BaseLeft;
+    }
 
-	bool isDirty() const
-	{
-		return m_VarianceDirty;
-	}
+    TriTreeNode *GetBaseRight()
+    {
+        return &m_BaseRight;
+    }
 
-	bool isVisibile() const
-	{
-		return m_isVisible;
-	}
+    bool isDirty() const
+    {
+        return m_VarianceDirty;
+    }
 
-	void SetVisibility(int eyeX, int eyeY, int leftX, int leftY, int rightX, int rightY);
+    bool isVisibile() const
+    {
+        return m_isVisible;
+    }
 
-	// The static half of the Patch Class
-	virtual void Init(int heightX, int heightY, int worldX, int worldY, unsigned char *hMap);
-	virtual void Reset();
-	virtual void Tessellate();
-	virtual void Render();
-	virtual void ComputeVariance();
+    void SetVisibility(int eyeX, int eyeY, int leftX, int leftY, int rightX, int rightY);
 
-	// The recursive half of the Patch Class
-	virtual void Split(TriTreeNode *tri);
-	virtual void RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int node);
-	virtual void RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY);
-	virtual unsigned char RecursComputeVariance(int leftX,  int leftY,  unsigned char leftZ, int rightX, int rightY, unsigned char rightZ,
-                                                int apexX,  int apexY,  unsigned char apexZ, int node);
+    // The static half of the Patch Class
+    virtual void Init(int heightX, int heightY, int worldX, int worldY, unsigned char *hMap);
+
+    virtual void Reset();
+
+    virtual void Tessellate();
+
+    virtual void Render();
+
+    virtual void ComputeVariance();
+
+    // The recursive half of the Patch Class
+    virtual void Split(TriTreeNode *tri);
+
+    virtual void RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int node);
+
+    virtual void RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY);
+
+    virtual unsigned char RecursComputeVariance(int leftX, int leftY, unsigned char leftZ, int rightX, int rightY, unsigned char rightZ,
+                                                int apexX, int apexY, unsigned char apexZ, int node);
 };
 
 #endif

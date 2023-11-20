@@ -69,7 +69,7 @@ enum ROTATION_INDEXES
 };
 
 #define SQR(x) ((x) * (x))
-#define MAX(a,b) ((a < b) ? (b) : (a))
+#define MAX(a, b) ((a < b) ? (b) : (a))
 #define DEG2RAD(a) (((a) * M_PI) / 180.0f)
 
 // External variables and functions:
@@ -84,6 +84,7 @@ extern int gNumTrisRendered;
 extern float gFovX;
 
 extern void calcNormal(float v[3][3], float out[3]);
+
 extern void ReduceToUnit(float vector[3]);
 
 // Landscape Class
@@ -91,29 +92,32 @@ extern void ReduceToUnit(float vector[3]);
 class Landscape
 {
 protected:
-	unsigned char* m_HeightMap;										// HeightMap of the Landscape
-	Patch m_Patches[NUM_PATCHES_PER_SIDE][NUM_PATCHES_PER_SIDE];	// Array of patches
+    unsigned char *m_HeightMap;                                        // HeightMap of the Landscape
+    Patch m_Patches[NUM_PATCHES_PER_SIDE][NUM_PATCHES_PER_SIDE];    // Array of patches
 
-	static int m_NextTriNode;										// Index to next free TriTreeNode
-	static TriTreeNode m_TriPool[POOL_SIZE];						// Pool of TriTree nodes for splitting
+    static int m_NextTriNode;                                        // Index to next free TriTreeNode
+    static TriTreeNode m_TriPool[POOL_SIZE];                        // Pool of TriTree nodes for splitting
 
-	static int GetNextTriNode()
-	{
-		return m_NextTriNode;
-	}
+    static int GetNextTriNode()
+    {
+        return m_NextTriNode;
+    }
 
-	static void SetNextTriNode(int nNextNode)
-	{
-		m_NextTriNode = nNextNode;
-	}
+    static void SetNextTriNode(int nNextNode)
+    {
+        m_NextTriNode = nNextNode;
+    }
 
 public:
-	static TriTreeNode* AllocateTri();
+    static TriTreeNode *AllocateTri();
 
-	virtual void Init(unsigned char* hMap);
-	virtual void Reset();
-	virtual void Tessellate();
-	virtual void Render();
+    virtual void Init(unsigned char *hMap);
+
+    virtual void Reset();
+
+    virtual void Tessellate();
+
+    virtual void Render();
 };
 
 #endif

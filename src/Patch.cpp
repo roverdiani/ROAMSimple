@@ -116,11 +116,9 @@ void Patch::Split(TriTreeNode *tri)
             tri->BaseNeighbor->RightChild->LeftNeighbor = tri->LeftChild;
             tri->LeftChild->RightNeighbor = tri->BaseNeighbor->RightChild;
             tri->RightChild->LeftNeighbor = tri->BaseNeighbor->LeftChild;
-        }
-        else
+        } else
             Split(tri->BaseNeighbor); // Base Neighbor (in a diamond with us) was not split yet, so do that now.
-    }
-    else
+    } else
     {
         // An edge triangle, trivial case.
         tri->LeftChild->RightNeighbor = nullptr;
@@ -179,8 +177,7 @@ void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int
 
         RecursRender(tri->LeftChild, apexX, apexY, leftX, leftY, centerX, centerY);
         RecursRender(tri->RightChild, rightX, rightY, apexX, apexY, centerX, centerY);
-    }
-    else
+    } else
     {
         // A leaf node!  Output a triangle to be rendered.
         // Actual number of rendered triangles...

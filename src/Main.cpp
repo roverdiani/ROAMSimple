@@ -20,12 +20,12 @@
 #include "Landscape.h"
 #include "Utility.h"
 
-SDL_Window* gWindow;
+SDL_Window *gWindow;
 SDL_GLContext gGlContext;
 
 bool isRunning = true;
 
-void SDLKeyDown(SDL_Keysym* keysym)
+void SDLKeyDown(SDL_Keysym *keysym)
 {
     switch (keysym->sym)
     {
@@ -85,7 +85,7 @@ void SDLKeyDown(SDL_Keysym* keysym)
     }
 }
 
-void SDLMouseClick(SDL_MouseButtonEvent* event)
+void SDLMouseClick(SDL_MouseButtonEvent *event)
 {
     if (event->button == SDL_BUTTON_LEFT)
     {
@@ -93,13 +93,12 @@ void SDLMouseClick(SDL_MouseButtonEvent* event)
         {
             gRotating = 1;
             gStartX = -1;
-        }
-        else
+        } else
             gRotating = 0;
     }
 }
 
-void SDLMouseMove(SDL_MouseMotionEvent* event)
+void SDLMouseMove(SDL_MouseMotionEvent *event)
 {
     if (event->state & SDL_BUTTON(1))
         MouseMove(event->x, event->y);
@@ -122,7 +121,8 @@ bool InitSDL()
 
     std::cout << "Creating SDL window..." << std::endl;
 
-    gWindow = SDL_CreateWindow("ROAM Terrain View", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
+    gWindow = SDL_CreateWindow("ROAM Terrain View", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT,
+                               SDL_WINDOW_OPENGL);
     if (!gWindow)
     {
         std::cout << "Could not create SDL window: " << SDL_GetError() << std::endl;
@@ -147,7 +147,7 @@ bool InitSDL()
     return true;
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     InitSDL();
 

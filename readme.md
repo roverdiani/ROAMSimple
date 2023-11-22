@@ -27,7 +27,7 @@ SDL2, OpenGL, CMake, C++, CLion
 
 ## Getting Started
 
-The project was made on Windows, with Jetbrains' CLion IDE using the Microsoft Visual Studio 2022 toolchain.
+The project was made on Windows, with Jetbrains' CLion IDE using the Microsoft Visual Studio 2022 toolchain. However, it should compile under Linux aswell (tested on Kubuntu).
 
 ### Prerequisites
 
@@ -35,6 +35,7 @@ The SDL2 library is required.
 
 * SDL2
    * Windows: download the binaries and place them wherever you want. Create a environment variable named **SDL2DIR** that points to the root directory of the SDL2 binaries.
+   * Linux: install the SDL2 and SDL2-dev packages using the package manager of your distro.
 
 ### Installation
 
@@ -46,7 +47,7 @@ git clone https://github.com/roverdiani/ROAMSimple.git
 
 2. Open and build the project using CLion, or use CMake directly to build it.
 
-3. Copy the SDL2.dll to the directory where the executable is located.
+3. On Windows, copy the SDL2.dll to the directory where the executable is located. Not needed on Linux.
 
 4. Copy the heightmap file to the directory where the executable is located. The original sample heightmap is available on the demo folder of the repository. It should be capable to open *Tread Marks* maps aswell, just like the original version, but that was not tested.
 
@@ -62,7 +63,7 @@ The application is pretty simple, and there is just a few controls that you can 
    * W, A, S, D, UP, DOWN: movement.
    * F: toggle animation.
    * O: toggle observe mode.
-   * Q: toggle surf mode.
+   * Q: toggle surface mode.
    * R: toggle frustum culling.
    * 1, 2: reduce and increase FOV.
    * 0, 9: increase, reduce map detail.

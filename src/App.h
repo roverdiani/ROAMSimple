@@ -17,6 +17,7 @@
 
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <chrono>
 #include "Utility.h"
 
 class App
@@ -72,7 +73,7 @@ private:
     int m_cameraMode = OBSERVE_MODE;
     int m_drawMode = DRAW_USE_TEXTURE;
 
-    // Misc. Globals
+    // Misc
     int gStartX = -1, gStartY = 0;
 
     // Camera Stuff
@@ -82,6 +83,8 @@ private:
     GLfloat m_animateAngle = 0.f;
     GLfloat m_clipAngle = 0.f;
     float m_fovX = 90.0f;
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_startTime, m_endTime;
 };
 
 #endif //ROAMSDL_APP_H

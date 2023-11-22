@@ -40,7 +40,7 @@ void App::Init()
     m_isAnimating = true;
 
     // Get the start time in milliseconds
-    gStartTime = std::chrono::high_resolution_clock::now();
+    m_startTime = std::chrono::high_resolution_clock::now();
 }
 
 bool App::InitSDL()
@@ -89,8 +89,8 @@ bool App::InitSDL()
 void App::Shutdown()
 {
     // Calculate the average number of frames per second.
-    gEndTime = std::chrono::high_resolution_clock::now();
-    m_AvgFrames = (int) ((m_numFrames * 1000) / std::chrono::duration_cast<std::chrono::milliseconds>(gEndTime - gStartTime).count());
+    m_endTime = std::chrono::high_resolution_clock::now();
+    m_AvgFrames = (int) ((m_numFrames * 1000) / std::chrono::duration_cast<std::chrono::milliseconds>(m_endTime - m_startTime).count());
 
     roam.FreeTerrain();
 

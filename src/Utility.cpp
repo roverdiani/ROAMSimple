@@ -14,26 +14,10 @@
 
 #include <SDL.h>
 #include <SDL_opengl.h>
-#include <cstdio>
 #include <cstdlib>
-#include <iostream>
 
 #include "Utility.h"
 #include "Landscape.h"
-#include "Roam.h"
-
-// Perspective & Window defines
-#define FOV_ANGLE 90.0f
-#define NEAR_CLIP 1.0f
-#define FAR_CLIP 2500.0f
-
-// --------------------------------------
-// GLOBALS
-// --------------------------------------
-
-
-
-std::chrono::time_point<std::chrono::high_resolution_clock> gStartTime, gEndTime;
 
 // Switch GL Contexts when moving between draw modes to improve performance.
 void Utility::SetDrawModeContext(int drawMode)

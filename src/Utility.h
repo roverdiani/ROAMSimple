@@ -15,11 +15,14 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
-#include <chrono>
-
 // Defines
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
+
+// Perspective & Window defines
+#define FOV_ANGLE 90.0f
+#define NEAR_CLIP 1.0f
+#define FAR_CLIP 2500.0f
 
 // Observer and Follower modes
 enum Modes
@@ -46,9 +49,6 @@ enum ROTATION_INDEXES
     ROTATE_YAW,
     ROTATE_ROLL
 };
-
-// Globals
-extern std::chrono::time_point<std::chrono::high_resolution_clock> gStartTime, gEndTime;
 
 class Utility
 {

@@ -129,7 +129,7 @@ void Patch::Split(TriTreeNode *tri)
 
 // Tessellate a Patch.
 // Will continue to split until the variance metric is met.
-void Patch::RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int node)
+void Patch::RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int node, const GLfloat* viewPosition, float frameVariance)
 {
     float TriVariance;
 
@@ -141,8 +141,8 @@ void Patch::RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX,
     {
         // Extremely slow distance metric (sqrt is used).
         // Replace this with a faster one!
-        float distance = 1.0f + sqrtf(((float) centerX - gViewPosition[0]) * ((float) centerX - gViewPosition[0]) +
-                ((float) centerY - gViewPosition[2]) * ((float) centerY - gViewPosition[2]));
+        float distance = 1.0f + sqrtf(((float) centerX - viewPosition[0]) * ((float) centerX - viewPosition[0]) +
+                ((float) centerY - viewPosition[2]) * ((float) centerY - viewPosition[2]));
 
         // Egads!  A division too?  What's this world coming to!
         // This should also be replaced with a faster operation.
@@ -152,7 +152,7 @@ void Patch::RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX,
 
     // IF we do not have variance info for this node, then we must have gotten here by splitting, so continue down to the lowest level.
     // OR if we are not below the variance tree, test for variance.
-    if ((node >= (1 << VARIANCE_DEPTH)) || (TriVariance > gFrameVariance))
+    if ((node >= (1 << VARIANCE_DEPTH)) || (TriVariance > frameVariance))
     {
         // Split this triangle.
         Split(tri);
@@ -161,14 +161,14 @@ void Patch::RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX,
         // Tessellate all the way down to one vertex per height field entry
         if (tri->LeftChild && ((abs(leftX - rightX) >= 3) || (abs(leftY - rightY) >= 3)))
         {
-            RecursTessellate(tri->LeftChild, apexX, apexY, leftX, leftY, centerX, centerY, node << 1);
-            RecursTessellate(tri->RightChild, rightX, rightY, apexX, apexY, centerX, centerY, 1 + (node << 1));
+            RecursTessellate(tri->LeftChild, apexX, apexY, leftX, leftY, centerX, centerY, node << 1, viewPosition, frameVariance);
+            RecursTessellate(tri->RightChild, rightX, rightY, apexX, apexY, centerX, centerY, 1 + (node << 1), viewPosition, frameVariance);
         }
     }
 }
 
 // Render the tree.  Simple no-fan method.
-void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY)
+void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int drawMode, int &numTrisRendered)
 {
     // All non-leaf nodes have both children, so just check for one
     if (tri->LeftChild)
@@ -177,20 +177,20 @@ void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int
         int centerX = (leftX + rightX) >> 1;
         int centerY = (leftY + rightY) >> 1;
 
-        RecursRender(tri->LeftChild, apexX, apexY, leftX, leftY, centerX, centerY);
-        RecursRender(tri->RightChild, rightX, rightY, apexX, apexY, centerX, centerY);
+        RecursRender(tri->LeftChild, apexX, apexY, leftX, leftY, centerX, centerY, drawMode, numTrisRendered);
+        RecursRender(tri->RightChild, rightX, rightY, apexX, apexY, centerX, centerY, drawMode, numTrisRendered);
     } else
     {
         // A leaf node!  Output a triangle to be rendered.
         // Actual number of rendered triangles...
-        gNumTrisRendered++;
+        numTrisRendered++;
 
         GLfloat leftZ = m_HeightMap[(leftY * MAP_SIZE) + leftX];
         GLfloat rightZ = m_HeightMap[(rightY * MAP_SIZE) + rightX];
         GLfloat apexZ = m_HeightMap[(apexY * MAP_SIZE) + apexX];
 
         // Perform lighting calculations if requested.
-        if (gDrawMode == DRAW_USE_LIGHTING)
+        if (drawMode == DRAW_USE_LIGHTING)
         {
             float v[3][3];
             float out[3];
@@ -224,7 +224,7 @@ void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int
         glVertex3f((GLfloat) leftX, (GLfloat) leftZ, (GLfloat) leftY);
 
         // Gouraud shading based on height samples instead of light normal
-        if (gDrawMode == DRAW_USE_TEXTURE || gDrawMode == DRAW_USE_FILL_ONLY)
+        if (drawMode == DRAW_USE_TEXTURE || drawMode == DRAW_USE_FILL_ONLY)
         {
             fColor = (60.0f + rightZ) / 256.0f;
             if (fColor > 1.0f)
@@ -237,7 +237,7 @@ void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int
         glVertex3f((GLfloat) rightX, (GLfloat) rightZ, (GLfloat) rightY);
 
         // Gouraud shading based on height samples instead of light normal
-        if (gDrawMode == DRAW_USE_TEXTURE || gDrawMode == DRAW_USE_FILL_ONLY)
+        if (drawMode == DRAW_USE_TEXTURE || drawMode == DRAW_USE_FILL_ONLY)
         {
             fColor = (60.0f + apexZ) / 256.0f;
             if (fColor > 1.0f)
@@ -322,20 +322,20 @@ void Patch::SetVisibility(int eyeX, int eyeY, int leftX, int leftY, int rightX, 
 }
 
 // Create an approximate mesh.
-void Patch::Tessellate()
+void Patch::Tessellate(GLfloat* viewPosition, float frameVariance)
 {
     // Split each of the base triangles
     m_CurrentVariance = m_VarianceLeft;
     RecursTessellate(&m_BaseLeft, m_WorldX, m_WorldY + PATCH_SIZE, m_WorldX + PATCH_SIZE,
-                     m_WorldY, m_WorldX, m_WorldY, 1);
+                     m_WorldY, m_WorldX, m_WorldY, 1, viewPosition, frameVariance);
 
     m_CurrentVariance = m_VarianceRight;
     RecursTessellate(&m_BaseRight, m_WorldX + PATCH_SIZE, m_WorldY, m_WorldX,
-                     m_WorldY + PATCH_SIZE, m_WorldX + PATCH_SIZE, m_WorldY + PATCH_SIZE, 1);
+                     m_WorldY + PATCH_SIZE, m_WorldX + PATCH_SIZE, m_WorldY + PATCH_SIZE, 1, viewPosition, frameVariance);
 }
 
 // Render the mesh.
-void Patch::Render()
+void Patch::Render(int drawMode, int& numTrisRendered)
 {
     // Store old matrix
     glPushMatrix();
@@ -345,9 +345,9 @@ void Patch::Render()
 
     glBegin(GL_TRIANGLES);
 
-    RecursRender(&m_BaseLeft, 0, PATCH_SIZE, PATCH_SIZE, 0, 0, 0);
+    RecursRender(&m_BaseLeft, 0, PATCH_SIZE, PATCH_SIZE, 0, 0, 0, drawMode, numTrisRendered);
     RecursRender(&m_BaseRight, PATCH_SIZE, 0, 0, PATCH_SIZE,
-                 PATCH_SIZE, PATCH_SIZE);
+                 PATCH_SIZE, PATCH_SIZE, drawMode, numTrisRendered);
 
     glEnd();
 

@@ -12,52 +12,51 @@
 //  OpenGL Super Bible (Waite Group Press)
 //  And many more...
 
+#ifndef UTILITY_H
+#define UTILITY_H
+
 #include <chrono>
 
 // Defines
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
+// Observer and Follower modes
+enum Modes
+{
+    FOLLOW_MODE = 0,
+    OBSERVE_MODE,
+    DRIVE_MODE,
+    FLY_MODE
+};
+
+// Drawing Modes
+enum DRAWING_MODES
+{
+    DRAW_USE_TEXTURE = 0,
+    DRAW_USE_LIGHTING,
+    DRAW_USE_FILL_ONLY,
+    DRAW_USE_WIREFRAME
+};
+
+// Rotation Indexes
+enum ROTATION_INDEXES
+{
+    ROTATE_PITCH = 0,
+    ROTATE_YAW,
+    ROTATE_ROLL
+};
+
 // Globals
 extern std::chrono::time_point<std::chrono::high_resolution_clock> gStartTime, gEndTime;
-extern int gNumFrames;
-extern unsigned char* gHeightMap;
-extern int gAnimating;
-extern int gRotating;
-extern int gStartX, gStartY;
-
-// Functions
-extern void loadTerrain(int size, unsigned char **dest);
-extern void freeTerrain();
-extern void SetDrawModeContext();
-extern bool roamInit(unsigned char* map);
-extern void roamDrawFrame();
-extern void drawFrustum();
-
-extern void KeyObserveToggle();
-extern void KeyDrawModeSurf();
-extern void KeyForward();
-extern void KeyLeft();
-extern void KeyBackward();
-extern void KeyRight();
-extern void KeyAnimateToggle();
-extern void KeyDrawFrustumToggle();
-extern void KeyUp();
-extern void KeyDown();
-extern void KeyMoreDetail();
-extern void KeyLessDetail();
-extern void ChangeSize(GLsizei w, GLsizei h);
-extern void KeyFOVDown();
-extern void KeyFOVUp();
-
-extern void RenderScene();
-extern void IdleFunction();
-extern void MouseMove(int mouseX, int mouseY);
-extern void SetupRC();
 
 class Utility
 {
 public:
+    static void SetupRC();
+    static void SetDrawModeContext(int drawMode);
+    static void ChangeSize(GLsizei w, GLsizei h, float fovX);
+
     static void ReduceToUnit(float vector[3]);
     static void CalcNormal(float v[3][3], float out[3]);
 
@@ -75,3 +74,5 @@ public:
         return (d < 0) ? (-1) : (d > 0);
     }
 };
+
+#endif

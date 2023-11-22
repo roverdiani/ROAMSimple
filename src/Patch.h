@@ -75,24 +75,21 @@ public:
     void SetVisibility(int eyeX, int eyeY, int leftX, int leftY, int rightX, int rightY);
 
     // The static half of the Patch Class
-    virtual void Init(int heightX, int heightY, int worldX, int worldY, unsigned char *hMap);
+    void Init(int heightX, int heightY, int worldX, int worldY, unsigned char *hMap);
+    void Reset();
 
-    virtual void Reset();
-
-    virtual void Tessellate();
-
-    virtual void Render();
-
-    virtual void ComputeVariance();
+    void Tessellate(GLfloat* viewPosition, float frameVariance);
+    void Render(int drawMode, int& numTrisRendered);
+    void ComputeVariance();
 
     // The recursive half of the Patch Class
-    virtual void Split(TriTreeNode *tri);
+    void Split(TriTreeNode *tri);
 
-    virtual void RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int node);
+    void RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int node, const GLfloat* viewPosition, float frameVariance);
 
-    virtual void RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY);
+    void RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int drawMode, int &numTrisRendered);
 
-    virtual unsigned char RecursComputeVariance(int leftX, int leftY, unsigned char leftZ, int rightX, int rightY, unsigned char rightZ,
+    unsigned char RecursComputeVariance(int leftX, int leftY, unsigned char leftZ, int rightX, int rightY, unsigned char rightZ,
                                                 int apexX, int apexY, unsigned char apexZ, int node);
 };
 

@@ -15,6 +15,7 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <cmath>
+#include <iostream>
 
 #include "Landscape.h"
 
@@ -37,26 +38,85 @@ TriTreeNode *Landscape::AllocateTri()
     return pTri;
 }
 
-// Initialize all patches
-void Landscape::Init(unsigned char *hMap)
+// Load the terrain height map and initiliza all terrain patches
+bool Landscape::LoadTerrain(int size)
 {
-    // Store the Height Field array
-    m_HeightMap = hMap;
+    // Optimization:  Add an extra row above and below the height map.
+    //   - The extra top row contains a copy of the last row in the height map.
+    //   - The extra bottom row contains a copy of the first row in the height map.
+    // This simplifies the wrapping of height values to a trivial case.
+    m_HeightMaster = (unsigned char *) malloc(size * size * sizeof(unsigned char) + size * 2);
 
+    // Give the rest of the application a pointer to the actual start of the height map.
+    heightMap = m_HeightMaster + size;
+
+    char fileName[30];
+    sprintf(fileName, "Height%d.raw", size);
+    FILE *fp = fopen(fileName, "rb");
+
+    // TESTING: READ A TREAD MARKS MAP...
+    if (!fp)
+    {
+        sprintf(fileName, "Map.ved");
+        fp = fopen(fileName, "rb");
+        if (fp)
+        {
+            fseek(fp, 40, SEEK_SET);    // Skip to the goods...
+            std::cout << "Tread Marks Map file found: " << fileName << std::endl;
+        }
+    } else
+        std::cout << "Raw Map file found: " << fileName << std::endl;
+
+    if (!fp)
+    {
+        // Oops!  Couldn't find the file.
+        std::cout << "No Map file found." << std::endl;
+
+        // Clear the board.
+        memset(m_HeightMaster, 0, size * size + size * 2);
+        return false;
+    }
+    fread(m_HeightMaster + size, 1, (size * size), fp);
+    fclose(fp);
+
+    // Copy the last row of the height map into the extra first row.
+    memcpy(m_HeightMaster, m_HeightMaster + size * size, size);
+
+    // Copy the first row of the height map into the extra last row.
+    memcpy(m_HeightMaster + size * size + size, m_HeightMaster + size, size);
+
+    InitTerrainPatches();
+
+    return true;
+}
+
+// Free the Height Field array
+void Landscape::FreeTerrain()
+{
+    if (m_HeightMaster)
+        free(m_HeightMaster);
+
+    if (heightMap)
+        free(heightMap);
+}
+
+// Initialize all terrain patches
+void Landscape::InitTerrainPatches()
+{
     // Initialize all terrain patches
     for (int y = 0; y < NUM_PATCHES_PER_SIDE; y++)
     {
         for (int x = 0; x < NUM_PATCHES_PER_SIDE; x++)
         {
             Patch *patch = &(m_Patches[y][x]);
-            patch->Init(x * PATCH_SIZE, y * PATCH_SIZE, x * PATCH_SIZE, y * PATCH_SIZE, hMap);
+            patch->Init(x * PATCH_SIZE, y * PATCH_SIZE, x * PATCH_SIZE, y * PATCH_SIZE, heightMap);
             patch->ComputeVariance();
         }
     }
 }
 
 // Reset all patches, recompute variance if needed
-void Landscape::Reset()
+void Landscape::Reset(const GLfloat *viewPosition, GLfloat clipAngle, float fovX)
 {
     //  Perform simple visibility culling on entire patches.
     //  - Define a triangle set back from the camera by one patch size, following the angle of the frustum.
@@ -64,22 +124,19 @@ void Landscape::Reset()
     //  - This visibility test is only accurate if the camera cannot look up or down significantly.
 
     const float PI_DIV_180 = M_PI / 180.0f;
-    const float FOV_DIV_2 = gFovX / 2;
+    const float FOV_DIV_2 = fovX / 2;
 
-    int eyeX = (int) (gViewPosition[0] - PATCH_SIZE * sinf(gClipAngle * PI_DIV_180));
-    int eyeY = (int) (gViewPosition[2] + PATCH_SIZE * cosf(gClipAngle * PI_DIV_180));
+    int eyeX = (int) (viewPosition[0] - PATCH_SIZE * sinf(clipAngle * PI_DIV_180));
+    int eyeY = (int) (viewPosition[2] + PATCH_SIZE * cosf(clipAngle * PI_DIV_180));
 
-    int leftX = (int) (eyeX + 100.0f * sinf((gClipAngle - FOV_DIV_2) * PI_DIV_180));
-    int leftY = (int) (eyeY - 100.0f * cosf((gClipAngle - FOV_DIV_2) * PI_DIV_180));
+    int leftX = (int) (eyeX + 100.0f * sinf((clipAngle - FOV_DIV_2) * PI_DIV_180));
+    int leftY = (int) (eyeY - 100.0f * cosf((clipAngle - FOV_DIV_2) * PI_DIV_180));
 
-    int rightX = (int) (eyeX + 100.0f * sinf((gClipAngle + FOV_DIV_2) * PI_DIV_180));
-    int rightY = (int) (eyeY - 100.0f * cosf((gClipAngle + FOV_DIV_2) * PI_DIV_180));
+    int rightX = (int) (eyeX + 100.0f * sinf((clipAngle + FOV_DIV_2) * PI_DIV_180));
+    int rightY = (int) (eyeY - 100.0f * cosf((clipAngle + FOV_DIV_2) * PI_DIV_180));
 
     // Set the next free triangle pointer back to the beginning
     SetNextTriNode(0);
-
-    // Reset rendered triangle count.
-    gNumTrisRendered = 0;
 
     // Go through the patches performing resets, compute variances, and linking.
     for (int y = 0; y < NUM_PATCHES_PER_SIDE; y++)
@@ -125,17 +182,17 @@ void Landscape::Reset()
 }
 
 // Create an approximate mesh of the landscape.
-void Landscape::Tessellate()
+void Landscape::Tessellate(GLfloat* viewPosition, float frameVariance)
 {
     // Perform Tessellation
     Patch *patch = &(m_Patches[0][0]);
     for (int count = 0; count < NUM_PATCHES_PER_SIDE * NUM_PATCHES_PER_SIDE; count++, patch++)
         if (patch->isVisibile())
-            patch->Tessellate();
+            patch->Tessellate(viewPosition, frameVariance);
 }
 
 // Render each patch of the landscape & adjust the frame variance.
-void Landscape::Render()
+void Landscape::Render(int desiredTris, float& frameVariance, int drawMode, int& numTrisRendered)
 {
     Patch *patch = &(m_Patches[0][0]);
 
@@ -144,14 +201,14 @@ void Landscape::Render()
 
     for (int count = 0; count < NUM_PATCHES_PER_SIDE * NUM_PATCHES_PER_SIDE; count++, patch++)
         if (patch->isVisibile())
-            patch->Render();
+            patch->Render(drawMode, numTrisRendered);
 
     // Check to see if we got close to the desired number of triangles.
     // Adjust the frame variance to a better value.
-    if (GetNextTriNode() != gDesiredTris)
-        gFrameVariance += ((float) GetNextTriNode() - (float) gDesiredTris) / (float) gDesiredTris;
+    if (GetNextTriNode() != desiredTris)
+        frameVariance += ((float) GetNextTriNode() - (float) desiredTris) / (float) desiredTris;
 
     // Bounds checking.
-    if (gFrameVariance < 0)
-        gFrameVariance = 0;
+    if (frameVariance < 0)
+        frameVariance = 0;
 }

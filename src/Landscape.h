@@ -52,45 +52,31 @@
 #define PATCH_SIZE (MAP_SIZE / NUM_PATCHES_PER_SIDE)
 #define TEXTURE_SIZE 128
 
-// Drawing Modes
-enum DRAWING_MODES
-{
-    DRAW_USE_TEXTURE = 0,
-    DRAW_USE_LIGHTING,
-    DRAW_USE_FILL_ONLY,
-    DRAW_USE_WIREFRAME
-};
-
-// Rotation Indexes
-enum ROTATION_INDEXES
-{
-    ROTATE_PITCH = 0,
-    ROTATE_YAW,
-    ROTATE_ROLL
-};
-
 #define DEG2RAD(a) (((a) * M_PI) / 180.0f)
-
-// External variables and functions:
-extern GLuint gTextureID;
-extern int gDrawMode;
-extern GLfloat gViewPosition[];
-extern GLfloat gCameraRotation[];
-extern GLfloat gClipAngle;
-extern float gFrameVariance;
-extern int gDesiredTris;
-extern int gNumTrisRendered;
-extern float gFovX;
 
 // Landscape Class
 // Holds all the information to render an entire landscape.
 class Landscape
 {
+public:
+    static TriTreeNode *AllocateTri();
+
+    bool LoadTerrain(int size);
+    void FreeTerrain();
+
+    void Reset(const GLfloat *viewPosition, GLfloat clipAngle, float fovX);
+    void Tessellate(GLfloat* viewPosition, float frameVariance);
+    void Render(int desiredTris, float& frameVariance, int drawMode, int& numTrisRendered);
+
+    unsigned char *heightMap = nullptr;
+
 protected:
-    unsigned char *m_HeightMap;                                        // HeightMap of the Landscape
+    void InitTerrainPatches();
+
+    unsigned char *m_HeightMaster = nullptr;                        // HeightMap of the Landscape
     Patch m_Patches[NUM_PATCHES_PER_SIDE][NUM_PATCHES_PER_SIDE];    // Array of patches
 
-    static int m_NextTriNode;                                        // Index to next free TriTreeNode
+    static int m_NextTriNode;                                       // Index to next free TriTreeNode
     static TriTreeNode m_TriPool[POOL_SIZE];                        // Pool of TriTree nodes for splitting
 
     static int GetNextTriNode()
@@ -102,14 +88,6 @@ protected:
     {
         m_NextTriNode = nNextNode;
     }
-
-public:
-    static TriTreeNode *AllocateTri();
-
-    virtual void Init(unsigned char *hMap);
-    virtual void Reset();
-    virtual void Tessellate();
-    virtual void Render();
 };
 
 #endif

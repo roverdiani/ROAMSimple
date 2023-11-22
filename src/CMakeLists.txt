@@ -12,6 +12,8 @@ include_directories(${SDL2_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 
 add_executable(roamsdl Main.cpp Utility.h Utility.cpp Landscape.h Landscape.cpp Patch.h Patch.cpp
         App.cpp
-        App.h)
+        App.h
+        Roam.cpp
+        Roam.h)
 
 target_link_libraries(roamsdl ${SDL2_LIBRARY} ${OPENGL_LIBRARIES})

@@ -16,6 +16,8 @@
 #define ROAMSDL_APP_H
 
 #include <SDL.h>
+#include <SDL_opengl.h>
+#include "Utility.h"
 
 class App
 {
@@ -28,9 +30,31 @@ public:
 private:
     bool InitSDL();
 
-    static void SDLMouseMove(SDL_MouseMotionEvent *event);
-    static void SDLMouseClick(SDL_MouseButtonEvent *event);
+    void SDLMouseMove(SDL_MouseMotionEvent *event);
+    void SDLMouseClick(SDL_MouseButtonEvent *event);
     void SDLKeyDown(SDL_Keysym *keysym);
+
+    void KeyObserveToggle();
+    void KeyForward();
+    void KeyLeft();
+    void KeyBackward();
+    void KeyRight();
+    void KeyAnimateToggle();
+    void KeyDrawFrustumToggle();
+    void KeyUp();
+    void KeyDown();
+    void KeyFOVDown();
+    void KeyFOVUp();
+    static void KeyMoreDetail();
+    static void KeyLessDetail();
+    void KeyDrawModeSurface();
+
+    void MouseMove(int mouseX, int mouseY);
+
+    void DrawFrustum();
+
+    void Update();
+    void RenderScene();
 
     SDL_Window *m_Window = nullptr;
     SDL_GLContext m_GlContext = nullptr;
@@ -38,6 +62,26 @@ private:
     bool m_IsRunning = true;
 
     int m_AvgFrames = -1;
+    int m_numFrames = 0;
+
+    int m_numTrisRendered = 0;
+
+    bool m_isAnimating = false;
+    bool m_isRotating = false;
+    bool m_drawFrustum = true;
+    int m_cameraMode = OBSERVE_MODE;
+    int m_drawMode = DRAW_USE_TEXTURE;
+
+    // Misc. Globals
+    int gStartX = -1, gStartY = 0;
+
+    // Camera Stuff
+    GLfloat m_viewPosition[3] = {0.f, 5.f, 0.f};
+    GLfloat m_cameraPosition[3] = {0.f, 0.f, -555.f};
+    GLfloat m_cameraRotation[3] = {42.f, -181.f, 0.f};
+    GLfloat m_animateAngle = 0.f;
+    GLfloat m_clipAngle = 0.f;
+    float m_fovX = 90.0f;
 };
 
 #endif //ROAMSDL_APP_H

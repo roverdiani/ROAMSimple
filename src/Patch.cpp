@@ -12,10 +12,11 @@
 //  OpenGL Super Bible (Waite Group Press)
 //  And many more...
 
-#include <windows.h>
-#include <gl/gl.h>
+#include <SDL_opengl.h>
 #include <cmath>
-#include "landscape.h"
+#include <algorithm>
+
+#include "Landscape.h"
 #include "Patch.h"
 #include "Utility.h"
 
@@ -75,7 +76,7 @@ void Patch::Split(TriTreeNode *tri)
     tri->RightChild = Landscape::AllocateTri();
 
     // If creation failed, just exit.
-    if (!tri->LeftChild)
+    if (!tri->LeftChild || !tri->RightChild)
         return;
 
     // Fill in the information we can get from the parent (neighbor pointers)
@@ -140,7 +141,8 @@ void Patch::RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX,
     {
         // Extremely slow distance metric (sqrt is used).
         // Replace this with a faster one!
-        float distance = 1.0f + sqrtf(SQR((float) centerX - gViewPosition[0]) + SQR((float) centerY - gViewPosition[2]));
+        float distance = 1.0f + sqrtf(((float) centerX - gViewPosition[0]) * ((float) centerX - gViewPosition[0]) +
+                ((float) centerY - gViewPosition[2]) * ((float) centerY - gViewPosition[2]));
 
         // Egads!  A division too?  What's this world coming to!
         // This should also be replaced with a faster operation.
@@ -208,7 +210,7 @@ void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int
             v[2][1] = (GLfloat) apexZ;
             v[2][2] = (GLfloat) apexY;
 
-            calcNormal(v, out);
+            Utility::CalcNormal(v, out);
             glNormal3fv(out);
         }
 
@@ -274,10 +276,10 @@ unsigned char Patch::RecursComputeVariance(int leftX, int leftY, unsigned char l
     if ((abs(leftX - rightX) >= 8) || (abs(leftY - rightY) >= 8))
     {
         // Final Variance for this node is the max of its own variance and that of its children.
-        myVariance = MAX(myVariance, RecursComputeVariance(apexX, apexY, apexZ, leftX,
+        myVariance = std::max(myVariance, RecursComputeVariance(apexX, apexY, apexZ, leftX,
                                                            leftY, leftZ, centerX, centerY,
                                                            centerZ, node << 1));
-        myVariance = MAX(myVariance, RecursComputeVariance(rightX, rightY, rightZ, apexX,
+        myVariance = std::max(myVariance, RecursComputeVariance(rightX, rightY, rightZ, apexX,
                                                            apexY, apexZ, centerX, centerY,
                                                            centerZ, 1 + (node << 1)));
     }
@@ -315,8 +317,8 @@ void Patch::SetVisibility(int eyeX, int eyeY, int leftX, int leftY, int rightX, 
     int patchCenterY = m_WorldY + PATCH_SIZE / 2;
 
     // Set visibility flag (orientation of both triangles must be counter-clockwise)
-    m_isVisible = (orientation(eyeX, eyeY, rightX, rightY, patchCenterX, patchCenterY) < 0) &&
-                  (orientation(leftX, leftY, eyeX, eyeY, patchCenterX, patchCenterY) < 0);
+    m_isVisible = (Utility::Orientation(eyeX, eyeY, rightX, rightY, patchCenterX, patchCenterY) < 0) &&
+                  (Utility::Orientation(leftX, leftY, eyeX, eyeY, patchCenterX, patchCenterY) < 0);
 }
 
 // Create an approximate mesh.

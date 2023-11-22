@@ -12,15 +12,32 @@
 //  OpenGL Super Bible (Waite Group Press)
 //  And many more...
 
-#include "App.h"
+#ifndef ROAMSDL_APP_H
+#define ROAMSDL_APP_H
 
-int main(int argc, char *argv[])
+#include <SDL.h>
+
+class App
 {
-    App app;
+public:
+    void Init();
+    void Shutdown();
 
-    app.Init();
-    app.Loop();
-    app.Shutdown();
+    void Loop();
 
-    return 0;
-}
+private:
+    bool InitSDL();
+
+    static void SDLMouseMove(SDL_MouseMotionEvent *event);
+    static void SDLMouseClick(SDL_MouseButtonEvent *event);
+    void SDLKeyDown(SDL_Keysym *keysym);
+
+    SDL_Window *m_Window = nullptr;
+    SDL_GLContext m_GlContext = nullptr;
+
+    bool m_IsRunning = true;
+
+    int m_AvgFrames = -1;
+};
+
+#endif //ROAMSDL_APP_H

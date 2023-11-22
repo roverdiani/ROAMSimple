@@ -12,14 +12,14 @@
 //  OpenGL Super Bible (Waite Group Press)
 //  And many more...
 
-#include <SDL_opengl.h>
+#include <chrono>
 
 // Defines
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
 // Globals
-extern long gStartTime, gEndTime;
+extern std::chrono::time_point<std::chrono::high_resolution_clock> gStartTime, gEndTime;
 extern int gNumFrames;
 extern unsigned char* gHeightMap;
 extern int gAnimating;
@@ -27,8 +27,6 @@ extern int gRotating;
 extern int gStartX, gStartY;
 
 // Functions
-extern void ReduceToUnit(float vector[3]);
-extern void calcNormal(float v[3][3], float out[3]);
 extern void loadTerrain(int size, unsigned char **dest);
 extern void freeTerrain();
 extern void SetDrawModeContext();
@@ -57,16 +55,23 @@ extern void IdleFunction();
 extern void MouseMove(int mouseX, int mouseY);
 extern void SetupRC();
 
-// Discover the orientation of a triangle's points:
-// Taken from "Programming Principles in Computer Graphics", L. Ammeraal (Wiley)
-inline int orientation(int pX, int pY, int qX, int qY, int rX, int rY)
+class Utility
 {
-	int aX = qX - pX;
-	int aY = qY - pY;
+public:
+    static void ReduceToUnit(float vector[3]);
+    static void CalcNormal(float v[3][3], float out[3]);
 
-	int bX = rX - pX;
-	int bY = rY - pY;
+    // Discover the orientation of a triangle's points:
+    // Taken from "Programming Principles in Computer Graphics", L. Ammeraal (Wiley)
+    static inline int Orientation(int pX, int pY, int qX, int qY, int rX, int rY)
+    {
+        int aX = qX - pX;
+        int aY = qY - pY;
 
-	float d = (float) aX * (float) bY - (float) aY * (float) bX;
-	return (d < 0) ? (-1) : (d > 0);
-}
+        int bX = rX - pX;
+        int bY = rY - pY;
+
+        float d = (float) aX * (float) bY - (float) aY * (float) bX;
+        return (d < 0) ? (-1) : (d > 0);
+    }
+};

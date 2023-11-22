@@ -12,12 +12,11 @@
 //  OpenGL Super Bible (Waite Group Press)
 //  And many more...
 
-#include <windows.h>
-#include <cmath>
-#include <gl/gl.h>        // OpenGL
 #include <SDL.h>
+#include <SDL_opengl.h>
+#include <cmath>
 
-#include "landscape.h"
+#include "Landscape.h"
 
 // Definition of the static member variables
 int Landscape::m_NextTriNode;
@@ -98,29 +97,29 @@ void Landscape::Reset()
             if (patch->isDirty())
                 patch->ComputeVariance();
 
-            if (patch->isVisibile())
-            {
-                // Link all the patches together.
-                if (x > 0)
-                    patch->GetBaseLeft()->LeftNeighbor = m_Patches[y][x - 1].GetBaseRight();
-                else
-                    patch->GetBaseLeft()->LeftNeighbor = nullptr; // Link to bordering Landscape here..
+            if (!patch->isVisibile())
+                continue;
 
-                if (x < (NUM_PATCHES_PER_SIDE - 1))
-                    patch->GetBaseRight()->LeftNeighbor = m_Patches[y][x + 1].GetBaseLeft();
-                else
-                    patch->GetBaseRight()->LeftNeighbor = nullptr;    // Link to bordering Landscape here..
+            // Link all the patches together.
+            if (x > 0)
+                patch->GetBaseLeft()->LeftNeighbor = m_Patches[y][x - 1].GetBaseRight();
+            else
+                patch->GetBaseLeft()->LeftNeighbor = nullptr; // Link to bordering Landscape here..
 
-                if (y > 0)
-                    patch->GetBaseLeft()->RightNeighbor = m_Patches[y - 1][x].GetBaseRight();
-                else
-                    patch->GetBaseLeft()->RightNeighbor = nullptr;    // Link to bordering Landscape here..
+            if (x < (NUM_PATCHES_PER_SIDE - 1))
+                patch->GetBaseRight()->LeftNeighbor = m_Patches[y][x + 1].GetBaseLeft();
+            else
+                patch->GetBaseRight()->LeftNeighbor = nullptr;    // Link to bordering Landscape here..
 
-                if (y < (NUM_PATCHES_PER_SIDE - 1))
-                    patch->GetBaseRight()->RightNeighbor = m_Patches[y + 1][x].GetBaseLeft();
-                else
-                    patch->GetBaseRight()->RightNeighbor = nullptr; // Link to bordering Landscape here..
-            }
+            if (y > 0)
+                patch->GetBaseLeft()->RightNeighbor = m_Patches[y - 1][x].GetBaseRight();
+            else
+                patch->GetBaseLeft()->RightNeighbor = nullptr;    // Link to bordering Landscape here..
+
+            if (y < (NUM_PATCHES_PER_SIDE - 1))
+                patch->GetBaseRight()->RightNeighbor = m_Patches[y + 1][x].GetBaseLeft();
+            else
+                patch->GetBaseRight()->RightNeighbor = nullptr; // Link to bordering Landscape here..
         }
     }
 }

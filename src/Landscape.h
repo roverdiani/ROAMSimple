@@ -15,6 +15,7 @@
 #ifndef LANDSCAPE_H
 #define LANDSCAPE_H
 
+#include <SDL_opengl.h>
 #include "Patch.h"
 
 // Various Pre-Defined map sizes & their #define counterparts:
@@ -68,8 +69,6 @@ enum ROTATION_INDEXES
     ROTATE_ROLL
 };
 
-#define SQR(x) ((x) * (x))
-#define MAX(a, b) ((a < b) ? (b) : (a))
 #define DEG2RAD(a) (((a) * M_PI) / 180.0f)
 
 // External variables and functions:
@@ -82,10 +81,6 @@ extern float gFrameVariance;
 extern int gDesiredTris;
 extern int gNumTrisRendered;
 extern float gFovX;
-
-extern void calcNormal(float v[3][3], float out[3]);
-
-extern void ReduceToUnit(float vector[3]);
 
 // Landscape Class
 // Holds all the information to render an entire landscape.
@@ -112,11 +107,8 @@ public:
     static TriTreeNode *AllocateTri();
 
     virtual void Init(unsigned char *hMap);
-
     virtual void Reset();
-
     virtual void Tessellate();
-
     virtual void Render();
 };
 

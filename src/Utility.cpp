@@ -12,25 +12,24 @@
 //  OpenGL Super Bible (Waite Group Press)
 //  And many more...
 
-#include <windows.h>
+#include <SDL.h>
+#include <SDL_opengl.h>
+#include <GL/glu.h>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <cmath>
 
-#include <gl/gl.h>
-#include <gl/glu.h>
-
-#include <SDL.h>
-
-#include "utility.h"
-#include "landscape.h"
+#include "Utility.h"
+#include "Landscape.h"
 
 // Observer and Follower modes
-#define FOLLOW_MODE (0)
-#define OBSERVE_MODE (1)
-#define DRIVE_MODE (2)
-#define FLY_MODE (3)
+enum Modes
+{
+    FOLLOW_MODE = 0,
+    OBSERVE_MODE,
+    DRIVE_MODE,
+    FLY_MODE
+};
 
 // Perspective & Window defines
 #define FOV_ANGLE 90.0f
@@ -60,65 +59,19 @@ int gCameraMode = OBSERVE_MODE;
 int gDrawMode = DRAW_USE_TEXTURE;
 int gStartX = -1, gStartY;
 int gNumTrisRendered;
-long gStartTime, gEndTime;
+std::chrono::time_point<std::chrono::high_resolution_clock> gStartTime, gEndTime;
 unsigned char *gHeightMap;
 unsigned char *gHeightMaster;
 int gNumFrames;
 float gFovX = 90.0f;
 
-// Beginning frame varience (should be high, it will adjust automatically)
+// Beginning frame variance (should be high, it will adjust automatically)
 float gFrameVariance = 50;
 
 // Desired number of Binary Triangle tessellations per frame.
 // This is not the desired number of triangles rendered!
 // There are usually twice as many Binary Triangle structures as there are rendered triangles.
 int gDesiredTris = 10000;
-
-// Reduces a normal vector specified as a set of three coordinates,
-// to a unit normal vector of length one.
-void ReduceToUnit(float vector[3])
-{
-    // Calculate the length of the vector
-    float length = sqrtf((vector[0] * vector[0]) + (vector[1] * vector[1]) + (vector[2] * vector[2]));
-
-    // Keep the program from blowing up by providing an exceptable
-    // value for vectors that may calculated too close to zero.
-    if (length == 0.0f)
-        length = 1.0f;
-
-    // Dividing each element by the length will result in a
-    // unit normal vector.
-    vector[0] /= length;
-    vector[1] /= length;
-    vector[2] /= length;
-}
-
-// Points p1, p2, & p3 specified in counter clock-wise order
-void calcNormal(float v[3][3], float out[3])
-{
-    float v1[3], v2[3];
-    static const int x = 0;
-    static const int y = 1;
-    static const int z = 2;
-
-    // Calculate two vectors from the three points
-    v1[x] = v[0][x] - v[1][x];
-    v1[y] = v[0][y] - v[1][y];
-    v1[z] = v[0][z] - v[1][z];
-
-    v2[x] = v[1][x] - v[2][x];
-    v2[y] = v[1][y] - v[2][y];
-    v2[z] = v[1][z] - v[2][z];
-
-    // Take the cross product of the two vectors to get
-    // the normal vector which will be stored in out
-    out[x] = v1[y] * v2[z] - v1[z] * v2[y];
-    out[y] = v1[z] * v2[x] - v1[x] * v2[z];
-    out[z] = v1[x] * v2[y] - v1[y] * v2[x];
-
-    // Normalize the vector (shorten length to one)
-    ReduceToUnit(out);
-}
 
 // Load the Height Field from a data file
 void loadTerrain(int size, unsigned char **dest)
@@ -139,7 +92,7 @@ void loadTerrain(int size, unsigned char **dest)
     // TESTING: READ A TREAD MARKS MAP...
     if (!fp)
     {
-        sprintf(fileName, "Map.ved", size);
+        sprintf(fileName, "Map.ved");
         fp = fopen(fileName, "rb");
         if (fp)
         {
@@ -639,6 +592,7 @@ void IdleFunction()
         gViewPosition[2] = ((GLfloat) MAP_SIZE / 4.f) + ((cosf(gAnimateAngle * M_PI / 180.f) + 1.f) * ((GLfloat) MAP_SIZE / 4.f));
 
         gViewPosition[1] = (MULT_SCALE * gHeightMap[(int) gViewPosition[0] + ((int) gViewPosition[2] * MAP_SIZE)]) + 4.0f;
+        gAnimating = 0;
     }
 }
 
@@ -686,4 +640,50 @@ void SetupRC()
 
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
     glTexGenfv(GL_T, GL_OBJECT_PLANE, t_vector);
+}
+
+// Reduces a normal vector specified as a set of three coordinates,
+// to a unit normal vector of length one.
+void Utility::ReduceToUnit(float *vector)
+{
+    // Calculate the length of the vector
+    float length = sqrtf((vector[0] * vector[0]) + (vector[1] * vector[1]) + (vector[2] * vector[2]));
+
+    // Keep the program from blowing up by providing an exceptable
+    // value for vectors that may calculated too close to zero.
+    if (length == 0.0f)
+        length = 1.0f;
+
+    // Dividing each element by the length will result in a
+    // unit normal vector.
+    vector[0] /= length;
+    vector[1] /= length;
+    vector[2] /= length;
+}
+
+// Points p1, p2, & p3 specified in counter clock-wise order
+void Utility::CalcNormal(float (*v)[3], float *out)
+{
+    float v1[3], v2[3];
+    static const int x = 0;
+    static const int y = 1;
+    static const int z = 2;
+
+    // Calculate two vectors from the three points
+    v1[x] = v[0][x] - v[1][x];
+    v1[y] = v[0][y] - v[1][y];
+    v1[z] = v[0][z] - v[1][z];
+
+    v2[x] = v[1][x] - v[2][x];
+    v2[y] = v[1][y] - v[2][y];
+    v2[z] = v[1][z] - v[2][z];
+
+    // Take the cross product of the two vectors to get
+    // the normal vector which will be stored in out
+    out[x] = v1[y] * v2[z] - v1[z] * v2[y];
+    out[y] = v1[z] * v2[x] - v1[x] * v2[z];
+    out[z] = v1[x] * v2[y] - v1[y] * v2[x];
+
+    // Normalize the vector (shorten length to one)
+    ReduceToUnit(out);
 }

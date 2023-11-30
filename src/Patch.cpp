@@ -276,6 +276,9 @@ void Patch::Tessellate(GLfloat* viewPosition, float frameVariance)
 // Render the mesh.
 void Patch::Render(int& numTrisRendered)
 {
+    if (!m_HeightMap)
+        return;
+
     // Store old matrix
     glPushMatrix();
 

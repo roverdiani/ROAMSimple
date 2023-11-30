@@ -67,13 +67,6 @@ public:
         return m_VarianceDirty;
     }
 
-    bool isVisibile() const
-    {
-        return m_isVisible;
-    }
-
-    void SetVisibility(int eyeX, int eyeY, int leftX, int leftY, int rightX, int rightY);
-
     // The static half of the Patch Class
     void Init(int heightX, int heightY, int worldX, int worldY, unsigned char *hMap);
     void Reset();

@@ -38,7 +38,7 @@ TriTreeNode *Landscape::AllocateTri()
     return pTri;
 }
 
-// Load the terrain height map and initiliza all terrain patches
+// Load the terrain height map and initialize all terrain patches
 bool Landscape::LoadTerrain(int size)
 {
     // Optimization:  Add an extra row above and below the height map.
@@ -95,9 +95,6 @@ void Landscape::FreeTerrain()
 {
     if (m_HeightMaster)
         free(m_HeightMaster);
-
-    if (heightMap)
-        free(heightMap);
 }
 
 // Initialize all terrain patches
@@ -147,15 +144,11 @@ void Landscape::Reset(const GLfloat *viewPosition, GLfloat clipAngle, float fovX
 
             // Reset the patch
             patch->Reset();
-            patch->SetVisibility(eyeX, eyeY, leftX, leftY, rightX, rightY);
 
             // Check to see if this patch has been deformed since last frame.
             // If so, recompute the variance tree for it.
             if (patch->isDirty())
                 patch->ComputeVariance();
-
-            if (!patch->isVisibile())
-                continue;
 
             // Link all the patches together.
             if (x > 0)
@@ -187,8 +180,7 @@ void Landscape::Tessellate(GLfloat* viewPosition, float frameVariance)
     // Perform Tessellation
     Patch *patch = &(m_Patches[0][0]);
     for (int count = 0; count < NUM_PATCHES_PER_SIDE * NUM_PATCHES_PER_SIDE; count++, patch++)
-        if (patch->isVisibile())
-            patch->Tessellate(viewPosition, frameVariance);
+        patch->Tessellate(viewPosition, frameVariance);
 }
 
 // Render each patch of the landscape & adjust the frame variance.
@@ -200,8 +192,7 @@ void Landscape::Render(int desiredTris, float& frameVariance, int drawMode, int&
     glScalef(1.0f, MULT_SCALE, 1.0f);
 
     for (int count = 0; count < NUM_PATCHES_PER_SIDE * NUM_PATCHES_PER_SIDE; count++, patch++)
-        if (patch->isVisibile())
-            patch->Render(drawMode, numTrisRendered);
+        patch->Render(drawMode, numTrisRendered);
 
     // Check to see if we got close to the desired number of triangles.
     // Adjust the frame variance to a better value.

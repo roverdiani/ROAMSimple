@@ -24,15 +24,6 @@
 #define NEAR_CLIP 1.0f
 #define FAR_CLIP 2500.0f
 
-// Observer and Follower modes
-enum Modes
-{
-    FOLLOW_MODE = 0,
-    OBSERVE_MODE,
-    DRIVE_MODE,
-    FLY_MODE
-};
-
 // Drawing Modes
 enum DRAWING_MODES
 {
@@ -59,20 +50,6 @@ public:
 
     static void ReduceToUnit(float vector[3]);
     static void CalcNormal(float v[3][3], float out[3]);
-
-    // Discover the orientation of a triangle's points:
-    // Taken from "Programming Principles in Computer Graphics", L. Ammeraal (Wiley)
-    static inline int Orientation(int pX, int pY, int qX, int qY, int rX, int rY)
-    {
-        int aX = qX - pX;
-        int aY = qY - pY;
-
-        int bX = rX - pX;
-        int bY = rY - pY;
-
-        float d = (float) aX * (float) bY - (float) aY * (float) bX;
-        return (d < 0) ? (-1) : (d > 0);
-    }
 };
 
 #endif

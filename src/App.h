@@ -35,24 +35,7 @@ private:
     void SDLMouseClick(SDL_MouseButtonEvent *event);
     void SDLKeyDown(SDL_Keysym *keysym);
 
-    void KeyObserveToggle();
-    void KeyForward();
-    void KeyLeft();
-    void KeyBackward();
-    void KeyRight();
-    void KeyAnimateToggle();
-    void KeyDrawFrustumToggle();
-    void KeyUp();
-    void KeyDown();
-    void KeyFOVDown();
-    void KeyFOVUp();
-    static void KeyMoreDetail();
-    static void KeyLessDetail();
     void KeyDrawModeSurface();
-
-    void MouseMove(int mouseX, int mouseY);
-
-    void DrawFrustum();
 
     void Update();
     void RenderScene();
@@ -67,10 +50,7 @@ private:
 
     int m_numTrisRendered = 0;
 
-    bool m_isAnimating = false;
     bool m_isRotating = false;
-    bool m_drawFrustum = true;
-    int m_cameraMode = OBSERVE_MODE;
     int m_drawMode = DRAW_USE_TEXTURE;
 
     // Misc

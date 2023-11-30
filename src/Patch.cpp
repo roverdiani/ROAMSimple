@@ -40,7 +40,7 @@ void Patch::Init(int heightX, int heightY, int worldX, int worldY, unsigned char
 
     // Initialize flags
     m_VarianceDirty = true;
-    m_isVisible = false;
+    m_isVisible = true;
 }
 
 // Reset the patch.
@@ -307,18 +307,6 @@ void Patch::ComputeVariance()
 
     // Clear the dirty flag for this patch
     m_VarianceDirty = false;
-}
-
-// Set patch's visibility flag.
-void Patch::SetVisibility(int eyeX, int eyeY, int leftX, int leftY, int rightX, int rightY)
-{
-    // Get patch's center point
-    int patchCenterX = m_WorldX + PATCH_SIZE / 2;
-    int patchCenterY = m_WorldY + PATCH_SIZE / 2;
-
-    // Set visibility flag (orientation of both triangles must be counter-clockwise)
-    m_isVisible = (Utility::Orientation(eyeX, eyeY, rightX, rightY, patchCenterX, patchCenterY) < 0) &&
-                  (Utility::Orientation(leftX, leftY, eyeX, eyeY, patchCenterX, patchCenterY) < 0);
 }
 
 // Create an approximate mesh.

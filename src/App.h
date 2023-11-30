@@ -35,8 +35,6 @@ private:
     void SDLMouseClick(SDL_MouseButtonEvent *event);
     void SDLKeyDown(SDL_Keysym *keysym);
 
-    void KeyDrawModeSurface();
-
     void Update();
     void RenderScene();
 
@@ -51,7 +49,6 @@ private:
     int m_numTrisRendered = 0;
 
     bool m_isRotating = false;
-    int m_drawMode = DRAW_USE_TEXTURE;
 
     // Misc
     int gStartX = -1, gStartY = 0;
@@ -60,8 +57,6 @@ private:
     GLfloat m_viewPosition[3] = {0.f, 5.f, 0.f};
     GLfloat m_cameraPosition[3] = {0.f, 0.f, -555.f};
     GLfloat m_cameraRotation[3] = {42.f, -181.f, 0.f};
-    GLfloat m_animateAngle = 0.f;
-    GLfloat m_clipAngle = 0.f;
     float m_fovX = 90.0f;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> m_startTime, m_endTime;

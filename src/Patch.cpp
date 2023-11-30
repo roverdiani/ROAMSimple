@@ -18,7 +18,6 @@
 
 #include "Landscape.h"
 #include "Patch.h"
-#include "Utility.h"
 
 // Initialize a patch.
 void Patch::Init(int heightX, int heightY, int worldX, int worldY, unsigned char *hMap)
@@ -125,7 +124,8 @@ void Patch::Split(TriTreeNode *tri)
 
 // Tessellate a Patch.
 // Will continue to split until the variance metric is met.
-void Patch::RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int node, const GLfloat* viewPosition, float frameVariance)
+void Patch::RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int node,
+                             const GLfloat* viewPosition, float frameVariance)
 {
     float TriVariance;
 
@@ -157,14 +157,16 @@ void Patch::RecursTessellate(TriTreeNode *tri, int leftX, int leftY, int rightX,
         // Tessellate all the way down to one vertex per height field entry
         if (tri->LeftChild && ((abs(leftX - rightX) >= 3) || (abs(leftY - rightY) >= 3)))
         {
-            RecursTessellate(tri->LeftChild, apexX, apexY, leftX, leftY, centerX, centerY, node << 1, viewPosition, frameVariance);
-            RecursTessellate(tri->RightChild, rightX, rightY, apexX, apexY, centerX, centerY, 1 + (node << 1), viewPosition, frameVariance);
+            RecursTessellate(tri->LeftChild, apexX, apexY, leftX, leftY, centerX, centerY,
+                             node << 1, viewPosition, frameVariance);
+            RecursTessellate(tri->RightChild, rightX, rightY, apexX, apexY, centerX, centerY,
+                             1 + (node << 1), viewPosition, frameVariance);
         }
     }
 }
 
 // Render the tree.  Simple no-fan method.
-void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int drawMode, int &numTrisRendered)
+void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int rightY, int apexX, int apexY, int &numTrisRendered)
 {
     // All non-leaf nodes have both children, so just check for one
     if (tri->LeftChild)
@@ -173,9 +175,12 @@ void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int
         int centerX = (leftX + rightX) >> 1;
         int centerY = (leftY + rightY) >> 1;
 
-        RecursRender(tri->LeftChild, apexX, apexY, leftX, leftY, centerX, centerY, drawMode, numTrisRendered);
-        RecursRender(tri->RightChild, rightX, rightY, apexX, apexY, centerX, centerY, drawMode, numTrisRendered);
-    } else
+        RecursRender(tri->LeftChild, apexX, apexY, leftX, leftY, centerX, centerY,
+                     numTrisRendered);
+        RecursRender(tri->RightChild, rightX, rightY, apexX, apexY, centerX, centerY,
+                     numTrisRendered);
+    }
+    else
     {
         // A leaf node!  Output a triangle to be rendered.
         // Actual number of rendered triangles...
@@ -185,62 +190,11 @@ void Patch::RecursRender(TriTreeNode *tri, int leftX, int leftY, int rightX, int
         GLfloat rightZ = m_HeightMap[(rightY * MAP_SIZE) + rightX];
         GLfloat apexZ = m_HeightMap[(apexY * MAP_SIZE) + apexX];
 
-        // Perform lighting calculations if requested.
-        if (drawMode == DRAW_USE_LIGHTING)
-        {
-            float v[3][3];
-            float out[3];
-
-            // Create a vertex normal for this triangle.
-            // NOTE: This is an extremely slow operation for illustration purposes only.
-            //       You should use a texture map with the lighting pre-applied to the texture.
-            v[0][0] = (GLfloat) leftX;
-            v[0][1] = (GLfloat) leftZ;
-            v[0][2] = (GLfloat) leftY;
-
-            v[1][0] = (GLfloat) rightX;
-            v[1][1] = (GLfloat) rightZ;
-            v[1][2] = (GLfloat) rightY;
-
-            v[2][0] = (GLfloat) apexX;
-            v[2][1] = (GLfloat) apexZ;
-            v[2][2] = (GLfloat) apexY;
-
-            Utility::CalcNormal(v, out);
-            glNormal3fv(out);
-        }
-
-        // Perform polygon coloring based on a height sample
-        float fColor = (60.0f + leftZ) / 256.0f;
-        if (fColor > 1.0f)
-            fColor = 1.0f;
-        glColor3f(fColor, fColor, fColor);
-
         // Output the LEFT VERTEX for the triangle
         glVertex3f((GLfloat) leftX, (GLfloat) leftZ, (GLfloat) leftY);
 
-        // Gouraud shading based on height samples instead of light normal
-        if (drawMode == DRAW_USE_TEXTURE || drawMode == DRAW_USE_FILL_ONLY)
-        {
-            fColor = (60.0f + rightZ) / 256.0f;
-            if (fColor > 1.0f)
-                fColor = 1.0f;
-
-            glColor3f(fColor, fColor, fColor);
-        }
-
         // Output the RIGHT VERTEX for the triangle
         glVertex3f((GLfloat) rightX, (GLfloat) rightZ, (GLfloat) rightY);
-
-        // Gouraud shading based on height samples instead of light normal
-        if (drawMode == DRAW_USE_TEXTURE || drawMode == DRAW_USE_FILL_ONLY)
-        {
-            fColor = (60.0f + apexZ) / 256.0f;
-            if (fColor > 1.0f)
-                fColor = 1.0f;
-
-            glColor3f(fColor, fColor, fColor);
-        }
 
         // Output the APEX VERTEX for the triangle
         glVertex3f((GLfloat) apexX, (GLfloat) apexZ, (GLfloat) apexY);
@@ -315,11 +269,12 @@ void Patch::Tessellate(GLfloat* viewPosition, float frameVariance)
 
     m_CurrentVariance = m_VarianceRight;
     RecursTessellate(&m_BaseRight, m_WorldX + PATCH_SIZE, m_WorldY, m_WorldX,
-                     m_WorldY + PATCH_SIZE, m_WorldX + PATCH_SIZE, m_WorldY + PATCH_SIZE, 1, viewPosition, frameVariance);
+                     m_WorldY + PATCH_SIZE, m_WorldX + PATCH_SIZE, m_WorldY + PATCH_SIZE, 1, viewPosition,
+                     frameVariance);
 }
 
 // Render the mesh.
-void Patch::Render(int drawMode, int& numTrisRendered)
+void Patch::Render(int& numTrisRendered)
 {
     // Store old matrix
     glPushMatrix();
@@ -329,9 +284,9 @@ void Patch::Render(int drawMode, int& numTrisRendered)
 
     glBegin(GL_TRIANGLES);
 
-    RecursRender(&m_BaseLeft, 0, PATCH_SIZE, PATCH_SIZE, 0, 0, 0, drawMode, numTrisRendered);
-    RecursRender(&m_BaseRight, PATCH_SIZE, 0, 0, PATCH_SIZE,
-                 PATCH_SIZE, PATCH_SIZE, drawMode, numTrisRendered);
+    RecursRender(&m_BaseLeft, 0, PATCH_SIZE, PATCH_SIZE, 0, 0, 0, numTrisRendered);
+    RecursRender(&m_BaseRight, PATCH_SIZE, 0, 0, PATCH_SIZE, PATCH_SIZE, PATCH_SIZE,
+                 numTrisRendered);
 
     glEnd();
 

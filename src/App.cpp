@@ -24,9 +24,36 @@ void App::Init()
     InitSDL();
 
     // Setup OpenGL
-    Utility::SetupRC();
-    Utility::SetDrawModeContext(m_drawMode);
-    Utility::ChangeSize(WINDOW_WIDTH, WINDOW_HEIGHT, m_fovX);
+    glEnable(GL_DEPTH_TEST); // Hidden surface removal
+    glFrontFace(GL_CCW); // Counter clock-wise polygons face out
+    glEnable(GL_CULL_FACE); // Cull back-facing triangles
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+    glPolygonMode(GL_FRONT, GL_LINE);
+
+    // Set the viewport to be the entire window
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    GLfloat fAspect = (GLfloat) WINDOW_WIDTH / (GLfloat) WINDOW_HEIGHT;
+
+    // Reset coordinate system
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    // Produce the perspective projection
+    double right = NEAR_CLIP * tan(m_fovX / 2.0 * M_PI / 180.0f);
+    double top = right / fAspect;
+    double bottom = -top;
+    double left = -right;
+    glFrustum(left, right, bottom, top, NEAR_CLIP, FAR_CLIP);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
     if (!roam.Init())
         return;
@@ -38,10 +65,6 @@ void App::Init()
 
     // Get the start time in milliseconds
     m_startTime = std::chrono::high_resolution_clock::now();
-
-    m_animateAngle += 0.4f;
-    m_viewPosition[0] = ((GLfloat) MAP_SIZE / 4.f) + ((sinf(m_animateAngle * M_PI / 180.f) + 1.f) * ((GLfloat) MAP_SIZE / 4.f));
-    m_viewPosition[2] = ((GLfloat) MAP_SIZE / 4.f) + ((cosf(m_animateAngle * M_PI / 180.f) + 1.f) * ((GLfloat) MAP_SIZE / 4.f));
 }
 
 bool App::InitSDL()
@@ -176,7 +199,8 @@ void App::SDLMouseClick(SDL_MouseButtonEvent *event)
         {
             m_isRotating = true;
             gStartX = -1;
-        } else
+        }
+        else
             m_isRotating = false;
     }
 }
@@ -197,9 +221,11 @@ void App::SDLKeyDown(SDL_Keysym *keysym)
         case SDLK_d:
             m_cameraRotation[1] += 5.0f;
             break;
-
-        case SDLK_q:
-            KeyDrawModeSurface();
+        case SDLK_UP:
+            m_cameraPosition[1] -= 5.0f;
+            break;
+        case SDLK_DOWN:
+            m_cameraPosition[1] += 5.0f;
             break;
 
         case SDLK_0:
@@ -207,13 +233,6 @@ void App::SDLKeyDown(SDL_Keysym *keysym)
             break;
         case SDLK_9:
             roam.DecreaseDetail();
-            break;
-
-        case SDLK_UP:
-            m_cameraPosition[1] -= 5.0f;
-            break;
-        case SDLK_DOWN:
-            m_cameraPosition[1] += 5.0f;
             break;
 
         case SDLK_ESCAPE:
@@ -249,24 +268,13 @@ void App::RenderScene()
     // Adjust the origin to be the center of the map...
     glTranslatef(-((GLfloat) MAP_SIZE * 0.5f), 0.f, -((GLfloat) MAP_SIZE * 0.5f));
 
-    m_clipAngle = -m_animateAngle;
-
     // Perform the actual rendering of the mesh.
     // Reset rendered triangle count.
     m_numTrisRendered = 0;
-    roam.Draw(m_viewPosition, m_clipAngle, m_fovX, m_drawMode, m_numTrisRendered);
+    roam.Draw(m_viewPosition, m_numTrisRendered);
 
     glPopMatrix();
 
     // Increment the frame counter.
     m_numFrames++;
-}
-
-void App::KeyDrawModeSurface()
-{
-    m_drawMode++;
-    if (m_drawMode > DRAW_USE_WIREFRAME)
-        m_drawMode = DRAW_USE_TEXTURE;
-
-    Utility::SetDrawModeContext(m_drawMode);
 }

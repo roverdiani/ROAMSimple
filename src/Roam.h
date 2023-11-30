@@ -14,15 +14,10 @@ public:
     void LoadTerrain();
     void FreeTerrain();
 
-    void Draw(GLfloat *viewPosition, GLfloat clipAngle, float fovX, int drawMode, int& numTrisRendered);
+    void Draw(GLfloat *viewPosition, int& numTrisRendered);
 
     void IncreaseDetail();
     void DecreaseDetail();
-
-    unsigned char* GetHeightMap()
-    {
-        return m_landscape.heightMap;
-    }
 
 private:
     // Desired number of Binary Triangle tessellations per frame. This is not the desired number of triangles rendered!
@@ -31,9 +26,6 @@ private:
 
     // Beginning frame variance (should be high, it will adjust automatically)
     float m_frameVariance = 50;
-
-    // Texture
-    GLuint m_textureId = 1;
 
     Landscape m_landscape;
 };

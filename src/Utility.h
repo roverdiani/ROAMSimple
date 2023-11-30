@@ -24,32 +24,12 @@
 #define NEAR_CLIP 1.0f
 #define FAR_CLIP 2500.0f
 
-// Drawing Modes
-enum DRAWING_MODES
-{
-    DRAW_USE_TEXTURE = 0,
-    DRAW_USE_LIGHTING,
-    DRAW_USE_FILL_ONLY,
-    DRAW_USE_WIREFRAME
-};
-
 // Rotation Indexes
 enum ROTATION_INDEXES
 {
     ROTATE_PITCH = 0,
     ROTATE_YAW,
     ROTATE_ROLL
-};
-
-class Utility
-{
-public:
-    static void SetupRC();
-    static void SetDrawModeContext(int drawMode);
-    static void ChangeSize(GLsizei w, GLsizei h, float fovX);
-
-    static void ReduceToUnit(float vector[3]);
-    static void CalcNormal(float v[3][3], float out[3]);
 };
 
 #endif

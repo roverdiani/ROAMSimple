@@ -101,7 +101,7 @@ void Landscape::InitTerrainPatches()
 }
 
 // Reset all patches, recompute variance if needed
-void Landscape::Reset(const GLfloat *viewPosition, GLfloat clipAngle, float fovX)
+void Landscape::Reset()
 {
     // Set the next free triangle pointer back to the beginning
     SetNextTriNode(0);
@@ -155,7 +155,7 @@ void Landscape::Tessellate(GLfloat* viewPosition, float frameVariance)
 }
 
 // Render each patch of the landscape & adjust the frame variance.
-void Landscape::Render(int desiredTris, float& frameVariance, int drawMode, int& numTrisRendered)
+void Landscape::Render(int desiredTris, float& frameVariance, int& numTrisRendered)
 {
     Patch *patch = &(m_Patches[0][0]);
 
@@ -163,7 +163,7 @@ void Landscape::Render(int desiredTris, float& frameVariance, int drawMode, int&
     glScalef(1.0f, MULT_SCALE, 1.0f);
 
     for (int count = 0; count < NUM_PATCHES_PER_SIDE * NUM_PATCHES_PER_SIDE; count++, patch++)
-        patch->Render(drawMode, numTrisRendered);
+        patch->Render(numTrisRendered);
 
     // Check to see if we got close to the desired number of triangles.
     // Adjust the frame variance to a better value.

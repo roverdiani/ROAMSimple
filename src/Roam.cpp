@@ -5,7 +5,9 @@
 #include <cstdlib>
 #include "Roam.h"
 #include "Landscape.h"
-#include <GL/glu.h>
+
+#define MAX_DESIRED_TRIS 20000
+#define MIN_DESIRED_TRIS 500
 
 // Initialize the ROAM implementation
 bool Roam::Init() const
@@ -16,41 +18,6 @@ bool Roam::Init() const
 
     if (POOL_SIZE < 100)
         return false;
-
-    // TEXTURE INITIALIZATION
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
-
-    unsigned char *pTexture = (unsigned char *) malloc(TEXTURE_SIZE * TEXTURE_SIZE * 3);
-    unsigned char *pTexWalk = pTexture;
-
-    if (!pTexture)
-        return false;
-
-    // Create a random stipple pattern for the texture.  Only use the Green channel.
-    // This could easily be modified to load in a bitmap or other texture source.
-    for (int x = 0; x < TEXTURE_SIZE; x++)
-    {
-        for (int y = 0; y < TEXTURE_SIZE; y++)
-        {
-            int color = (int) (128.0 + (40.0 * rand()) / RAND_MAX);
-            if (color > 255)
-                color = 255;
-            if (color < 0)
-                color = 0;
-
-            *(pTexWalk++) = 0;
-            *(pTexWalk++) = color;    // Only use the Green chanel.
-            *(pTexWalk++) = 0;
-        }
-    }
-
-    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, TEXTURE_SIZE, TEXTURE_SIZE, GL_RGB, GL_UNSIGNED_BYTE, pTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-
-    free(pTexture);
-
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
     return true;
 }
@@ -66,24 +33,24 @@ void Roam::FreeTerrain()
 }
 
 // Call all functions needed to draw a frame of the landscape
-void Roam::Draw(GLfloat *viewPosition, GLfloat clipAngle, float fovX, int drawMode, int& numTrisRendered)
+void Roam::Draw(GLfloat *viewPosition, int& numTrisRendered)
 {
     // Perform all the functions needed to render one frame.
-    m_landscape.Reset(viewPosition, clipAngle, fovX);
+    m_landscape.Reset();
     m_landscape.Tessellate(viewPosition, m_frameVariance);
-    m_landscape.Render(m_desiredTris, m_frameVariance, drawMode, numTrisRendered);
+    m_landscape.Render(m_desiredTris, m_frameVariance, numTrisRendered);
 }
 
 void Roam::IncreaseDetail()
 {
     m_desiredTris += 500;
-    if (m_desiredTris > 20000)
-        m_desiredTris = 20000;
+    if (m_desiredTris > MAX_DESIRED_TRIS)
+        m_desiredTris = MAX_DESIRED_TRIS;
 }
 
 void Roam::DecreaseDetail()
 {
     m_desiredTris -= 500;
-    if (m_desiredTris < 500)
-        m_desiredTris = 500;
+    if (m_desiredTris < MIN_DESIRED_TRIS)
+        m_desiredTris = MIN_DESIRED_TRIS;
 }

@@ -45,7 +45,6 @@ protected:
 
     unsigned char *m_CurrentVariance;                            // Which varience we are currently using. [Only valid during the Tessellate and ComputeVariance passes]
     bool m_VarianceDirty;                                        // Does the Varience Tree need to be recalculated for this Patch?
-    bool m_isVisible;                                            // Is this patch visible in the current frame?
 
     TriTreeNode m_BaseLeft;                                        // Left base triangle tree node
     TriTreeNode m_BaseRight;                                    // Right base triangle tree node

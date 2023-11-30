@@ -12,7 +12,6 @@
 //  OpenGL Super Bible (Waite Group Press)
 //  And many more...
 
-#include <SDL.h>
 #include <SDL_opengl.h>
 #include <cmath>
 #include <iostream>
@@ -54,19 +53,6 @@ bool Landscape::LoadTerrain(int size)
     sprintf(fileName, "Height%d.raw", size);
     FILE *fp = fopen(fileName, "rb");
 
-    // TESTING: READ A TREAD MARKS MAP...
-    if (!fp)
-    {
-        sprintf(fileName, "Map.ved");
-        fp = fopen(fileName, "rb");
-        if (fp)
-        {
-            fseek(fp, 40, SEEK_SET);    // Skip to the goods...
-            std::cout << "Tread Marks Map file found: " << fileName << std::endl;
-        }
-    } else
-        std::cout << "Raw Map file found: " << fileName << std::endl;
-
     if (!fp)
     {
         // Oops!  Couldn't find the file.
@@ -76,6 +62,8 @@ bool Landscape::LoadTerrain(int size)
         memset(m_HeightMaster, 0, size * size + size * 2);
         return false;
     }
+
+    std::cout << "Raw Map file found: " << fileName << std::endl;
     fread(m_HeightMaster + size, 1, (size * size), fp);
     fclose(fp);
 
@@ -115,23 +103,6 @@ void Landscape::InitTerrainPatches()
 // Reset all patches, recompute variance if needed
 void Landscape::Reset(const GLfloat *viewPosition, GLfloat clipAngle, float fovX)
 {
-    //  Perform simple visibility culling on entire patches.
-    //  - Define a triangle set back from the camera by one patch size, following the angle of the frustum.
-    //  - A patch is visible if it's center point is included in the angle: Left,Eye,Right
-    //  - This visibility test is only accurate if the camera cannot look up or down significantly.
-
-    const float PI_DIV_180 = M_PI / 180.0f;
-    const float FOV_DIV_2 = fovX / 2;
-
-    int eyeX = (int) (viewPosition[0] - PATCH_SIZE * sinf(clipAngle * PI_DIV_180));
-    int eyeY = (int) (viewPosition[2] + PATCH_SIZE * cosf(clipAngle * PI_DIV_180));
-
-    int leftX = (int) (eyeX + 100.0f * sinf((clipAngle - FOV_DIV_2) * PI_DIV_180));
-    int leftY = (int) (eyeY - 100.0f * cosf((clipAngle - FOV_DIV_2) * PI_DIV_180));
-
-    int rightX = (int) (eyeX + 100.0f * sinf((clipAngle + FOV_DIV_2) * PI_DIV_180));
-    int rightY = (int) (eyeY - 100.0f * cosf((clipAngle + FOV_DIV_2) * PI_DIV_180));
-
     // Set the next free triangle pointer back to the beginning
     SetNextTriNode(0);
 

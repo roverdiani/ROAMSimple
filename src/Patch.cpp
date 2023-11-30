@@ -40,15 +40,11 @@ void Patch::Init(int heightX, int heightY, int worldX, int worldY, unsigned char
 
     // Initialize flags
     m_VarianceDirty = true;
-    m_isVisible = true;
 }
 
 // Reset the patch.
 void Patch::Reset()
 {
-    // Assume patch is not visible.
-    m_isVisible = false;
-
     // Reset the important relationships
     m_BaseLeft.LeftChild = m_BaseLeft.RightChild = m_BaseRight.LeftChild = m_BaseLeft.LeftChild = nullptr;
 

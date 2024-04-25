@@ -14,7 +14,11 @@
 
 #include <SDL.h>
 #include <SDL_opengl.h>
-#include <GL/glu.h>
+#if defined (__APPLE__) && defined(__MACH__)
+#   include <OpenGL/glu.h>
+#else
+#   include <GL/glu.h>
+#endif
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
